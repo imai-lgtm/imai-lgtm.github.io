@@ -762,7 +762,7 @@ const BGM = (() => {
       master=bCtx.createGain(); master.gain.value=0.26;
       master.connect(bCtx.destination);
     }
-    if(bCtx.state==='suspended')bCtx.resume();
+    // resume は呼び出し側で Promise 管理するためここでは呼ばない
   }
 
   function _n(f, t0, dur, type, vol){
@@ -805,8 +805,8 @@ const BGM = (() => {
       master.gain.linearRampToValueAtTime(0.26,bCtx.currentTime+2.0);
       _loopTitle();
     };
-    if(bCtx.state==='suspended'){ bCtx.resume().then(_start).catch(_start); }
-    else { _start(); }
+    // 常に resume() を Promise で待ってから再生（Android/iOS対応）
+    Promise.resolve(bCtx.resume()).then(_start).catch(_start);
   }
 
   function _loopTitle(){
@@ -1001,8 +1001,8 @@ function spawnItem(){
   el.style.top='-60px';
   // vy は px/秒 で管理（画面高さに対して約20〜35%/秒）
   const wH=wrap.clientHeight||700;
-  const baseSpeed = wH * (0.38 + Math.random()*0.22);  // 画面高の38〜60%/秒（高速化）
-  const accel     = (60-timeLeft) * wH * 0.002;        // 時間経過で加速
+  const baseSpeed = wH * (0.65 + Math.random()*0.3);   // 画面高の65〜95%/秒（さらに高速化）
+  const accel     = (60-timeLeft) * wH * 0.003;        // 時間経過で加速
   dropItems.push({el, x:parseFloat(el.style.left), y:-60,
     vy: baseSpeed + accel,
     score:def.score, size:def.size, type:def.type});
